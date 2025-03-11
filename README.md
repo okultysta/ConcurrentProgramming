@@ -4,5 +4,5 @@
 
 | Name Surname (initials) | GUID                                     |
 | ----------------------- | ---------------------------------------- |
-| Jędrzej Bartoszewski    | `{FD9D086C-532F-4AAC-BB99-69D7798837D8}` |
-| Kacper Maziarz          | `{44FBFCF5-4430-4964-878D-1867DC679E0D}` |
+| okultysta               | `{5ba8b495-0a7e-466f-935c-dc46abad2756}` |
+| Kacperux1               | `{2d5a4721-e9b9-4c8f-bee1-81a7ad2023c7}` |
