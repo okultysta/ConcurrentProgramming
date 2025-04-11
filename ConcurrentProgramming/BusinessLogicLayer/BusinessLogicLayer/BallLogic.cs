@@ -23,7 +23,7 @@ public class BallLogic : IBallManager
         {
             x = random.NextDouble() * width,
             y = random.NextDouble() * height,
-            radius = 50,
+            radius = 20,
             SpeedX = random.NextDouble() * 5 - 2.5, // Losowa prędkość w osi X (-2.5 do 2.5)
             SpeedY = random.NextDouble() * 5 - 2.5  // Losowa prędkość w osi Y (-2.5 do 2.5)
         });

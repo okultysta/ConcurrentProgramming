@@ -12,23 +12,25 @@
         <Button Content="Start" Command="{Binding StartSimulationCommand}" />
         <Button Content="Dodaj kulkę" Command="{Binding AddBallCommand}" Margin="5"/>
         <Button Content="Usuń kulkę" Command="{Binding RemoveBallCommand}" Margin="5"/>
-        <Canvas Width="400" Height="400" Background="Beige">
-            <ItemsControl ItemsSource="{Binding Balls}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <Canvas />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <ItemsControl.ItemTemplate>
-                    <DataTemplate>
-                        <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue">
-                            <Ellipse.RenderTransform>
-                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
-                            </Ellipse.RenderTransform>
-                        </Ellipse>
-                    </DataTemplate>
-                </ItemsControl.ItemTemplate>
-            </ItemsControl>
-        </Canvas>
+        <Border BorderBrush="Black" BorderThickness="3" Width="410" Margin="10">
+            <Canvas Width="400" Height="400" Background="Beige">
+                <ItemsControl ItemsSource="{Binding Balls}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <Canvas />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue">
+                                <Ellipse.RenderTransform>
+                                    <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                                </Ellipse.RenderTransform>
+                            </Ellipse>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </Canvas>
+        </Border>
     </StackPanel>
 </Window>
