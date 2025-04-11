@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Diagnostics;
 
 public class BallModel : INotifyPropertyChanged
 {
@@ -9,10 +10,10 @@ public class BallModel : INotifyPropertyChanged
         get => x;
         set
         {
-            if (Math.Abs(x - value) > 0.01) // Użyj tolerancji dla double
+            if (x != value)
             {
                 x = value;
-                //System.Diagnostics.Debug.WriteLine($"X changed to {value}");
+                System.Diagnostics.Debug.WriteLine($"Zmieniono X na {x}"); // Debugowanie
                 OnPropertyChanged(nameof(X));
             }
         }
@@ -26,18 +27,17 @@ public class BallModel : INotifyPropertyChanged
             if (y != value)
             {
                 y = value;
-                OnPropertyChanged(nameof(Y));  // Powiadomienie UI o zmianie
+                System.Diagnostics.Debug.WriteLine($"Zmieniono Y na {y}"); // Debugowanie
+                OnPropertyChanged(nameof(Y));
             }
         }
     }
 
-    public double Radius { get; set; } = 10;
+    public double Radius { get; set; } = 20;
 
     public event PropertyChangedEventHandler PropertyChanged;
     protected void OnPropertyChanged(string name)
     {
-        // Wydrukuj, aby upewnić się, że zmiana jest powiadamiana
-        Console.WriteLine($"Właściwość {name} została zmieniona");
         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
     }
 }

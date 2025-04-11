@@ -21,8 +21,11 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue"
-                                 Canvas.Left="{Binding X}" Canvas.Top="{Binding Y}" />
+                        <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue">
+                            <Ellipse.RenderTransform>
+                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>

@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Windows.Input;
 using System.Windows.Threading;
-using DataLayer;
 namespace View
 {
     public class MainViewModel : INotifyPropertyChanged
@@ -15,6 +14,8 @@ namespace View
         public ICommand RemoveBallCommand { get; }
 
         private DispatcherTimer timer;
+        private double boardWidth;
+        private double boardHeight;
 
         public MainViewModel()
         {
@@ -23,13 +24,25 @@ namespace View
             StartSimulationCommand = new RelayCommand(StartSimulation);
             AddBallCommand = new RelayCommand(AddBall);
             RemoveBallCommand = new RelayCommand(RemoveBall);
+        }
 
+        // Metoda aktualizująca rozmiar planszy
+        public void UpdateBoardSize(double newWidth, double newHeight)
+        {
+            boardWidth = newWidth;
+            boardHeight = newHeight;
+
+            // Aktualizowanie pozycji kulek (przykład - możesz dodać bardziej zaawansowaną logikę)
+            foreach (var ball in Balls)
+            {
+                ball.X = ball.X / 400 * boardWidth;
+                ball.Y = ball.Y / 400 * boardHeight;
+            }
         }
 
         private void StartSimulation()
         {
             simulation.CreateBall();
-            // Tworzenie kul
             simulation.CreateBall();
             Balls.Clear();
 
@@ -39,7 +52,7 @@ namespace View
                 Balls.Add(new BallModel { X = b.x, Y = b.y });
             }
 
-            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(50) };
+            timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(20) };
             timer.Tick += (s, e) => UpdateBalls();
             timer.Start();
             System.Diagnostics.Debug.WriteLine("Symulacja uruchomiona!");
@@ -49,14 +62,20 @@ namespace View
         {
             simulation.UpdateBallPositions();
             var updated = simulation.GetCurrentBallStates();
-            //Console.WriteLine("Aktualizacja pozycji");
+
+
             for (int i = 0; i < updated.Count(); i++)
             {
-                Balls[i].X = updated.ElementAt(i).x;
-                Balls[i].Y = updated.ElementAt(i).y;
-                //System.Diagnostics.Debug.WriteLine($"Kulka {i} - Nowa pozycja: X = {Balls[i].X}, Y = {Balls[i].Y}");
+                var ball = Balls[i];
+                var newBallState = updated.ElementAt(i);
+
+                // Przypisanie nowych wartości do właściwości X i Y
+                ball.X = newBallState.x;
+                ball.Y = newBallState.y;
             }
+
         }
+
         private void AddBall()
         {
             simulation.CreateBall();
@@ -73,7 +92,7 @@ namespace View
             }
         }
 
-            
         public event PropertyChangedEventHandler PropertyChanged;
     }
 }
+
