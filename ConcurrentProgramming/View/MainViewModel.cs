@@ -20,8 +20,11 @@ namespace View
 
         public MainViewModel()
         {
-            DataLayer.IBallRepository repo = new DataLayer.MemoryBallRepository();
-            simulation = new BallLogic(repo, 400, 400); // startowy rozmiar planszy
+
+        }
+        public MainViewModel(IBallManager manager)
+        {
+            simulation = manager;
             StartSimulationCommand = new RelayCommand(StartSimulation);
             AddBallCommand = new RelayCommand(AddBall);
             RemoveBallCommand = new RelayCommand(RemoveBall);

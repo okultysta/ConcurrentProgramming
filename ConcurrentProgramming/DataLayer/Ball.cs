@@ -4,9 +4,9 @@ namespace DataLayer
 {
     public class Ball
     {
-        public double x { get; set; }
-        public double y { get; set; }
-        public double radius { get; set; }
+        public double x { get; set; } // środek
+        public double y { get; set; } // środek
+        public double radius { get; set; } 
         public double SpeedX { get; set; } // Prędkość w osi X
         public double SpeedY { get; set; } // Prędkość w osi Y
 
