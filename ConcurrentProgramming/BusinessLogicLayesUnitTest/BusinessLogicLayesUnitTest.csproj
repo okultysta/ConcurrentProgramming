@@ -3,15 +3,14 @@
 	<PropertyGroup>
 		<OutputType>Library</OutputType>
 		<TargetFramework>net8.0</TargetFramework>
-		<!-- lub net6.0, net7.0 itp. -->
 		<IsPackable>false</IsPackable>
 		<IsTestProject>true</IsTestProject>
-		<!-- Ważne, aby wskazać, że to projekt testowy -->
 	</PropertyGroup>
 
 	<ItemGroup>
 		<PackageReference Include="MSTest.TestAdapter" Version="3.8.3" />
 		<PackageReference Include="MSTest.TestFramework" Version="3.8.3" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
 	</ItemGroup>
 
 	<ItemGroup>
