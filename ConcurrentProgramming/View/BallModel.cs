@@ -1,43 +1,28 @@
 ﻿using System.ComponentModel;
-using System.Diagnostics;
 
 public class BallModel : INotifyPropertyChanged
 {
-    private double x, y;
+    private double x;
+    private double y;
+    private double radius = 20;
 
     public double X
     {
         get => x;
-        set
-        {
-            if (x != value)
-            {
-                x = value;
-                System.Diagnostics.Debug.WriteLine($"Zmieniono X na {x}"); // Debugowanie
-                OnPropertyChanged(nameof(X));
-            }
-        }
+        set { x = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(X))); }
     }
 
     public double Y
     {
         get => y;
-        set
-        {
-            if (y != value)
-            {
-                y = value;
-                System.Diagnostics.Debug.WriteLine($"Zmieniono Y na {y}"); // Debugowanie
-                OnPropertyChanged(nameof(Y));
-            }
-        }
+        set { y = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Y))); }
     }
 
-    public double Radius { get; set; } = 20;
+    public double Radius
+    {
+        get => radius;
+        set { radius = value; PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(Radius))); }
+    }
 
     public event PropertyChangedEventHandler PropertyChanged;
-    protected void OnPropertyChanged(string name)
-    {
-        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(name));
-    }
 }

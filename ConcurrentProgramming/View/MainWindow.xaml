@@ -8,12 +8,21 @@
         <vm:MainViewModel />
     </Window.DataContext>
 
-    <StackPanel>
-        <Button Content="Start" Command="{Binding StartSimulationCommand}" />
-        <Button Content="Dodaj kulkę" Command="{Binding AddBallCommand}" Margin="5"/>
-        <Button Content="Usuń kulkę" Command="{Binding RemoveBallCommand}" Margin="5"/>
-        <Border BorderBrush="Black" BorderThickness="3" Width="410" Margin="10">
-            <Canvas Width="400" Height="400" Background="Beige">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <!-- plansza -->
+        </Grid.RowDefinitions>
+
+        <Button Content="Start" Command="{Binding StartSimulationCommand}" Grid.Row="0" Margin="5"/>
+        <Button Content="Dodaj kulkę" Command="{Binding AddBallCommand}" Grid.Row="1" Margin="5"/>
+        <Button Content="Usuń kulkę" Command="{Binding RemoveBallCommand}" Grid.Row="2" Margin="5"/>
+
+        <Border Grid.Row="3" BorderBrush="Black" BorderThickness="3" Margin="10">
+            <Canvas x:Name="BoardCanvas" Background="Beige" SizeChanged="BoardCanvas_SizeChanged">
                 <ItemsControl ItemsSource="{Binding Balls}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -32,5 +41,5 @@
                 </ItemsControl>
             </Canvas>
         </Border>
-    </StackPanel>
+    </Grid>
 </Window>
