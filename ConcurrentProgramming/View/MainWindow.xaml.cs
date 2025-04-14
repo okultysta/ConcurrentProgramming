@@ -1,23 +1,31 @@
-﻿using System.Text;
+﻿using DataLayer;
+using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
-namespace View;
-
-/// <summary>
-/// Interaction logic for MainWindow.xaml
-/// </summary>
-public partial class MainWindow : Window
+namespace View
 {
-    public MainWindow()
+    public partial class MainWindow : Window
     {
-        InitializeComponent();
+        private MainViewModel viewModel;
+       
+        public MainWindow()
+        {
+            InitializeComponent();
+            SetDependencies();
+            this.DataContext = viewModel;
+        }
+
+        private void BoardCanvas_SizeChanged(object sender, SizeChangedEventArgs e)
+        {
+            viewModel.UpdateBoardSize(BoardCanvas.ActualWidth, BoardCanvas.ActualHeight);
+        }
+
+        private void SetDependencies()
+        {
+            IBallRepository repo = new MemoryBallRepository();
+            IBallManager manager = new BallLogic(repo, 400, 400);
+            viewModel = new MainViewModel(manager);
+        }
     }
 }
