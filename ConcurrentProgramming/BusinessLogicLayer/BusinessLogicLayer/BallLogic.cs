@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic; // Upewnij się, że dodano tę przestrzeń nazw
+using System.Collections.Generic;
 using DataLayer;
 
 public class BallLogic : IBallManager
@@ -18,18 +18,16 @@ public class BallLogic : IBallManager
 
     public void CreateBall()
     {
-        // Tworzymy kulę z losową prędkością
+        double radius = 20;
         repository.AddBall(new Ball
         {
-            x = random.NextDouble() * width,
-            y = random.NextDouble() * height,
-            radius = 20,
-            SpeedX = random.NextDouble() * 5 - 2.5, // Losowa prędkość w osi X (-2.5 do 2.5)
-            SpeedY = random.NextDouble() * 5 - 2.5  // Losowa prędkość w osi Y (-2.5 do 2.5)
+            x = random.NextDouble() * (width - radius),
+            y = random.NextDouble() * (height - radius),
+            radius = radius,
+            SpeedX = random.NextDouble() * 5 - 2.5,
+            SpeedY = random.NextDouble() * 5 - 2.5
         });
     }
-
-
 
     public void UpdateBallPositions()
     {
@@ -38,28 +36,28 @@ public class BallLogic : IBallManager
             // Ruch kuli
             ball.Move();
 
-            // Odbicie od krawędzi (bocznej i górnej/dolnej)
-            if (ball.x - ball.radius < 0 || ball.x + ball.radius > width)
+            // Sprawdzenie odbicia od krawędzi
+            if (ball.x < 0 || ball.x + ball.radius > width)
             {
-                ball.SpeedX = -ball.SpeedX; // Zmiana kierunku w osi X
+                System.Diagnostics.Debug.WriteLine($"Odbicie w osi X przed: Ball({ball.x}, {ball.y}), SpeedX: {ball.SpeedX}");
+                ball.SpeedX = -ball.SpeedX;
+                System.Diagnostics.Debug.WriteLine($"Po odbiciu: Ball({ball.x}, {ball.y})");
             }
 
-            if (ball.y - ball.radius < 0 || ball.y + ball.radius > height)
+            if (ball.y < 0 || ball.y + ball.radius > height)
             {
-                ball.SpeedY = -ball.SpeedY; // Zmiana kierunku w osi Y
+                System.Diagnostics.Debug.WriteLine($"Odbicie w osi Y: Ball({ball.x}, {ball.y}), SpeedY: {ball.SpeedY}");
+                ball.SpeedY = -ball.SpeedY;
+                System.Diagnostics.Debug.WriteLine($"Po odbiciu: Ball({ball.x}, {ball.y})");
             }
 
-            // Upewnij się, że kula nie wychodzi poza ekran
-            ball.x = Math.Clamp(ball.x, ball.radius, width - ball.radius);
-            ball.y = Math.Clamp(ball.y, ball.radius, height - ball.radius);
-
-            // Debugowanie
-            //System.Diagnostics.Debug.WriteLine($"Ball moved to ({ball.x}, {ball.y}) with speed ({ball.SpeedX}, {ball.SpeedY})");
+            // Ustawienie pozycji kuli na planszy z uwzględnieniem promienia
+            ball.x = Math.Clamp(ball.x, 0, width - ball.radius);
+            ball.y = Math.Clamp(ball.y, 0, height - ball.radius);
         }
     }
 
-
-    public IEnumerable<Ball> GetCurrentBallStates() => repository.GetAllBalls(); 
+    public IEnumerable<Ball> GetCurrentBallStates() => repository.GetAllBalls();
 
     public void DeleteBall()
     {

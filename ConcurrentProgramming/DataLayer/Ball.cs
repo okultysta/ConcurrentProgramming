@@ -6,7 +6,7 @@ namespace DataLayer
     {
         public double x { get; set; }
         public double y { get; set; }
-        public int radius { get; set; }
+        public double radius { get; set; }
         public double SpeedX { get; set; } // Prędkość w osi X
         public double SpeedY { get; set; } // Prędkość w osi Y
 

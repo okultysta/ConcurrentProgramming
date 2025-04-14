@@ -9,37 +9,36 @@
     </Window.DataContext>
 
     <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <!-- plansza -->
-        </Grid.RowDefinitions>
+    <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" /> <!-- plansza -->
+    </Grid.RowDefinitions>
 
-        <Button Content="Start" Command="{Binding StartSimulationCommand}" Grid.Row="0" Margin="5"/>
-        <Button Content="Dodaj kulkę" Command="{Binding AddBallCommand}" Grid.Row="1" Margin="5"/>
-        <Button Content="Usuń kulkę" Command="{Binding RemoveBallCommand}" Grid.Row="2" Margin="5"/>
+    <Button Content="Start" Command="{Binding StartSimulationCommand}" Grid.Row="0" Margin="5"/>
+    <Button Content="Dodaj kulkę" Command="{Binding AddBallCommand}" Grid.Row="1" Margin="5"/>
+    <Button Content="Usuń kulkę" Command="{Binding RemoveBallCommand}" Grid.Row="2" Margin="5"/>
 
-        <Border Grid.Row="3" BorderBrush="Black" BorderThickness="3" Margin="10">
-            <Canvas x:Name="BoardCanvas" Background="Beige" SizeChanged="BoardCanvas_SizeChanged">
-                <ItemsControl ItemsSource="{Binding Balls}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <Canvas />
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue">
-                                <Ellipse.RenderTransform>
-                                    <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
-                                </Ellipse.RenderTransform>
-                            </Ellipse>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
-            </Canvas>
-        </Border>
-    </Grid>
+    <Border Grid.Row="3" BorderBrush="Black" BorderThickness="3" Margin="10">
+        <Canvas x:Name="BoardCanvas" Background="Beige" SizeChanged="BoardCanvas_SizeChanged">
+            <ItemsControl ItemsSource="{Binding Balls}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas />
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Ellipse Width="{Binding Radius}" Height="{Binding Radius}" Fill="Blue">
+                            <Ellipse.RenderTransform>
+                                <TranslateTransform X="{Binding X}" Y="{Binding Y}" />
+                            </Ellipse.RenderTransform>
+                        </Ellipse>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </Canvas>
+    </Border>
+</Grid>
 </Window>
