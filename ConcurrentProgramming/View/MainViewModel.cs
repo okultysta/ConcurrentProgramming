@@ -1,5 +1,8 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Linq;
 using System.Windows.Input;
 using System.Windows.Threading;
 
@@ -18,16 +21,17 @@ namespace View
         private double boardWidth;
         private double boardHeight;
 
-        public MainViewModel()
-        {
+        private int waitingAddCount = 0;
+        private int waitingRemoveCount = 0;
 
-        }
+        public MainViewModel() { }
+
         public MainViewModel(IBallManager manager)
         {
             simulation = manager;
             StartSimulationCommand = new RelayCommand(StartSimulation);
-            AddBallCommand = new RelayCommand(AddBall);
-            RemoveBallCommand = new RelayCommand(RemoveBall);
+            AddBallCommand = new RelayCommand(QueueAddBall);
+            RemoveBallCommand = new RelayCommand(QueueRemoveBall);
         }
 
         public void UpdateBoardSize(double newWidth, double newHeight)
@@ -55,6 +59,23 @@ namespace View
 
         private void UpdateBalls()
         {
+            
+            for (int i = 0; i < waitingAddCount; i++)
+            {
+                simulation.CreateBall();
+                var newBall = simulation.GetCurrentBallStates().Last();
+                Balls.Add(new BallModel { X = newBall.x, Y = newBall.y, Radius = newBall.radius });
+            }
+            waitingAddCount = 0;
+
+            for (int i = 0; i < waitingRemoveCount && Balls.Count > 0; i++)
+            {
+                simulation.DeleteBall();
+                Balls.RemoveAt(Balls.Count - 1);
+            }
+            waitingRemoveCount = 0;
+
+            // Aktualizacja pozycji kulek
             simulation.UpdateBallPositions();
             var updated = simulation.GetCurrentBallStates();
 
@@ -67,20 +88,14 @@ namespace View
             }
         }
 
-        private void AddBall()
+        private void QueueAddBall()
         {
-            simulation.CreateBall();
-            var newBall = simulation.GetCurrentBallStates().Last();
-            Balls.Add(new BallModel { X = newBall.x, Y = newBall.y, Radius = newBall.radius });
+            waitingAddCount++;
         }
 
-        private void RemoveBall()
+        private void QueueRemoveBall()
         {
-            if (Balls.Count > 0)
-            {
-                simulation.DeleteBall();
-                Balls.RemoveAt(Balls.Count - 1);
-            }
+            waitingRemoveCount++;
         }
 
         public event PropertyChangedEventHandler PropertyChanged;
