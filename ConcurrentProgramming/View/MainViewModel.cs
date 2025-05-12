@@ -71,7 +71,7 @@ namespace View
             for (int i = 0; i < waitingRemoveCount && Balls.Count > 0; i++)
             {
                 simulation.DeleteBall();
-                Balls.RemoveAt(Balls.Count - 1);
+                Balls.RemoveAt(0);
             }
             waitingRemoveCount = 0;
 
