@@ -78,11 +78,13 @@ namespace View
             // Aktualizacja pozycji kulek
             simulation.UpdateBallPositions();
             var updated = simulation.GetCurrentBallStates();
+            var updatedList = updated.ToList();
+            int count = Math.Min(Balls.Count, updatedList.Count);
 
-            for (int i = 0; i < updated.Count(); i++)
+            for (int i = 0; i < count; i++)
             {
                 var ball = Balls[i];
-                var newBallState = updated.ElementAt(i);
+                var newBallState = updatedList[i];
                 ball.X = newBallState.x;
                 ball.Y = newBallState.y;
             }
