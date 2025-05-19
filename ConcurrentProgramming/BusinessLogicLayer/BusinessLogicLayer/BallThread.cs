@@ -5,23 +5,21 @@ namespace DataLayer
 {
     public class BallThread : Ball
     {
-        private readonly double width;
-        private readonly double height;
+        private readonly FrameSizeProvider frameSizeProvider;
         private readonly int delay;
         private readonly IBallRepository repository;
         private Thread thread;
         private bool running = true;
         private readonly object _lock = new object();
 
-        public BallThread(double x, double y, double radius, double speedX, double speedY, double width, double height, IBallRepository repository, int delay = 16)
+        public BallThread(double x, double y, double radius, double speedX, double speedY, FrameSizeProvider frameSizeProvider, IBallRepository repository, int delay = 16)
         {
             this.x = x;
             this.y = y;
             this.radius = radius;
             this.SpeedX = speedX;
             this.SpeedY = speedY;
-            this.width = width;
-            this.height = height;
+            this.frameSizeProvider = frameSizeProvider;
             this.repository = repository;
             this.delay = delay;
         }
@@ -55,14 +53,17 @@ namespace DataLayer
 
         private void HandleWallCollision()
         {
-            if (x < 0 || x + radius > width)
+            double currentWidth = frameSizeProvider.Width;
+            double currentHeight = frameSizeProvider.Height;
+
+            if (x < 0 || x + radius > currentWidth)
                 SpeedX = -SpeedX;
 
-            if (y < 0 || y + radius > height)
+            if (y < 0 || y + radius > currentHeight)
                 SpeedY = -SpeedY;
 
-            x = Math.Clamp(x, 0, width - radius);
-            y = Math.Clamp(y, 0, height - radius);
+            x = Math.Clamp(x, 0, currentWidth - radius);
+            y = Math.Clamp(y, 0, currentHeight - radius);
         }
 
         private void HandleCollisions()

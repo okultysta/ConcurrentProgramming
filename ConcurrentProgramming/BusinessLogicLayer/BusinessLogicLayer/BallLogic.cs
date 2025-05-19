@@ -5,16 +5,14 @@ using DataLayer;
 
 public class BallLogic : IBallManager
 {
-    private double width;
-    private double height;
+    private readonly FrameSizeProvider frameSizeProvider;
     private readonly Random random = new Random();
     private readonly IBallRepository repository;
 
     public BallLogic(IBallRepository repo, double initWidth, double initHeight)
     {
         repository = repo;
-        width = initWidth;
-        height = initHeight;
+        frameSizeProvider = new FrameSizeProvider(initWidth, initHeight);
     }
 
     public async void CreateBall()
@@ -22,12 +20,16 @@ public class BallLogic : IBallManager
         await Task.Run(() =>
         {
             double radius = 20;
-            double x = random.NextDouble() * (width - radius);
-            double y = random.NextDouble() * (height - radius);
+            double currentWidth = frameSizeProvider.Width;
+            double currentHeight = frameSizeProvider.Height;
+
+            double x = random.NextDouble() * (currentWidth - radius);
+            double y = random.NextDouble() * (currentHeight - radius);
+
             double speedX = random.NextDouble() * 5 - 2.5;
             double speedY = random.NextDouble() * 5 - 2.5;
 
-            var ball = new BallThread(x, y, radius, speedX, speedY, width, height, repository);
+            var ball = new BallThread(x, y, radius, speedX, speedY, frameSizeProvider, repository);
             repository.AddBall(ball);
             ball.Start();
         });
@@ -53,8 +55,8 @@ public class BallLogic : IBallManager
 
     public void updateFrameSize(double newWidth, double newHeight)
     {
-        width = newWidth;
-        height = newHeight;
+        frameSizeProvider.Width = newWidth;
+        frameSizeProvider.Height = newHeight;
     }
 
     public void UpdateBallPositions() { } // niepotrzebne
