@@ -1,21 +1,22 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace DataLayer
 {
-    public class MemoryBallRepository : IBallRepository
+    public class MemoryBallRepository : IBallRepository, IDisposable
     {
         private readonly List<Ball> _balls = new List<Ball>();
         private readonly object _lock = new object();
-        private readonly BallLogger  logger = new BallLogger("logfile.txt");
+        private readonly BallLogger _logger;
+        private bool disposed = false;
 
         public MemoryBallRepository(string logFilePath = null)
         {
             if (string.IsNullOrEmpty(logFilePath))
-                logFilePath = "logfile.txt"; 
+                logFilePath = "logfile.txt";
 
-            logger = new BallLogger(logFilePath);
-     
+            _logger = new BallLogger(logFilePath);
         }
 
         public void AddBall(Ball ball)
@@ -30,7 +31,7 @@ namespace DataLayer
         {
             lock (_lock)
             {
-                return _balls.ToList(); // snapshot, bez przekazywania referencji
+                return _balls.ToList(); // snapshot
             }
         }
 
@@ -44,9 +45,15 @@ namespace DataLayer
 
         public void SaveBallData(Ball ball)
         {
-            logger.Log(ball);
-            logger.Stop();
+            _logger.Log(ball);
+        }
+
+        public void Dispose()
+        {
+            if (disposed) return;
+            _logger.Dispose();
+            disposed = true;
+            GC.SuppressFinalize(this);
         }
     }
 }
-

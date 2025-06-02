@@ -1,19 +1,20 @@
 ﻿using DataLayer;
-using System;
 using System.Collections.Concurrent;
-using System.IO;
-using System.Threading;
 
 public class BallLogger : IDisposable
 {
-    private readonly string logFilePath;
-    private readonly BlockingCollection<string> logQueue = new();
+    private readonly string filePath;
+    private readonly StreamWriter writer;
     private readonly Thread loggingThread;
+    private readonly ConcurrentQueue<Ball> queue = new();
+    private volatile bool running = true;
     private bool disposed = false;
 
     public BallLogger(string filePath)
     {
-        logFilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+        this.filePath = filePath;
+        var fs = new FileStream(filePath, FileMode.Append, FileAccess.Write, FileShare.Read);
+        writer = new StreamWriter(fs) { AutoFlush = true };
         loggingThread = new Thread(ProcessQueue)
         {
             IsBackground = true
@@ -23,44 +24,47 @@ public class BallLogger : IDisposable
 
     public void Log(Ball ball)
     {
-        if (disposed) throw new ObjectDisposedException(nameof(BallLogger));
-        if (ball == null) throw new ArgumentNullException(nameof(ball));
-
-        string logLine = $"{DateTime.Now:o} Ball X={ball.x} Y={ball.y} SpeedX={ball.SpeedX} SpeedY={ball.SpeedY}";
-        logQueue.Add(logLine);
+        if (!running || disposed)
+            throw new ObjectDisposedException(nameof(BallLogger));
+        queue.Enqueue(ball);
     }
 
     private void ProcessQueue()
     {
-        try
+        while (running || !queue.IsEmpty)
         {
-            using StreamWriter writer = new(logFilePath, append: true);
-            foreach (var line in logQueue.GetConsumingEnumerable())
+            try
             {
-                writer.WriteLine(line);
-                writer.Flush();
+                if (queue.TryDequeue(out var ball))
+                {
+                    string line = $"{DateTime.Now:O} Ball X={ball.x} Y={ball.y} SpeedX={ball.SpeedX} SpeedY={ball.SpeedY}";
+                    writer.WriteLine(line);
+                }
+                else
+                {
+                    Thread.Sleep(50);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"[Logger] Write error: {ex.Message}");
             }
         }
-        catch (Exception ex)
-        {
-            // Log error lub obsłuż w inny sposób
-            Console.Error.WriteLine("Logger error: " + ex.Message);
-        }
     }
 
-    // Kończy przyjmowanie logów i czeka na zakończenie wątku
     public void Stop()
     {
-        if (disposed) return;
-
-        logQueue.CompleteAdding();
-        loggingThread.Join();
-        disposed = true;
+        running = false;
+        loggingThread.Join(); 
+        writer.Flush();       // pewność, że bufor się opróżnił
+        writer.Dispose();     // dopiero teraz zamykamy
     }
-
-    // Implementacja IDisposable
+    
     public void Dispose()
     {
+        if (disposed) return;
         Stop();
+        disposed = true;
+        GC.SuppressFinalize(this);
     }
 }

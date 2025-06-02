@@ -104,7 +104,7 @@ namespace DataLayer
                 double dx = other.x - this.x;
                 double dy = other.y - this.y;
                 double distance = Math.Sqrt(dx * dx + dy * dy);
-                double minDist = this.radius + other.radius;
+                double minDist = (this.radius + other.radius)/2;
 
                 if (distance < minDist && distance > 0.0)
                 {

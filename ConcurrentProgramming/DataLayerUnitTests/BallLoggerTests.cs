@@ -21,6 +21,7 @@ namespace DataLayer.Tests
         [TestCleanup]
         public void Cleanup()
         {
+            logger.Dispose();
             if (File.Exists(tempLogFile))
                 File.Delete(tempLogFile);
         }
@@ -39,20 +40,22 @@ namespace DataLayer.Tests
 
             // Act
             logger.Log(ball);
-            Thread.Sleep(100); // poczekaj, żeby logger zdążył zapisać
-            logger.Stop();
-
+            Thread.Sleep(150); // więcej czasu dla wątku loggera
+            logger.Dispose();
             // Assert
             string[] lines = File.ReadAllLines(tempLogFile);
             Assert.AreEqual(1, lines.Length);
-            StringAssert.Contains(lines[0], "Ball X=123,45");
-            StringAssert.Contains(lines[0], "Y=67,89");
-            StringAssert.Contains(lines[0], "SpeedX=-1,23");
-            StringAssert.Contains(lines[0], "SpeedY=4,56");
+
+            var line = lines[0];
+            Assert.IsTrue(line.Contains("X=123.45") || line.Contains("X=123,45"));
+            Assert.IsTrue(line.Contains("Y=67.89") || line.Contains("Y=67,89"));
+            Assert.IsTrue(line.Contains("SpeedX=-1.23") || line.Contains("SpeedX=-1,23"));
+            Assert.IsTrue(line.Contains("SpeedY=4.56") || line.Contains("SpeedY=4,56"));
 
             DateTime parsedDate;
-            Assert.IsTrue(DateTime.TryParse(lines[0].Split(' ')[0], out parsedDate));
+            Assert.IsTrue(DateTime.TryParse(line.Split(' ')[0], out parsedDate));
         }
+
 
 
     }
