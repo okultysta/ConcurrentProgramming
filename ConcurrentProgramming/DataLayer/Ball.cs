@@ -21,10 +21,10 @@ namespace DataLayer
             this.SpeedY = speedY;
         }
 
-        public void Move()
+        public void Move(double TimeInterval)
         {
-            this.x += SpeedX;
-            this.y += SpeedY;
+            this.x += SpeedX*TimeInterval;
+            this.y += SpeedY*TimeInterval;
         }
     }
 

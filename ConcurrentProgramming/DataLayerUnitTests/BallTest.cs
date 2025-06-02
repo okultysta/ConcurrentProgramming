@@ -57,13 +57,14 @@ public class BallTests
             SpeedX = 5,
             SpeedY = -3
         };
+        double timeInterval = 1.0; // Zakładam, że Move przyjmuje czas jako parametr
 
         // Act
-        ball.Move();
+        ball.Move(timeInterval);
 
         // Assert
-        Assert.AreEqual(15, ball.x);
-        Assert.AreEqual(17, ball.y);
+        Assert.AreEqual(15, ball.x, 0.0001);
+        Assert.AreEqual(17, ball.y, 0.0001);
     }
 
     [TestMethod]
@@ -77,12 +78,13 @@ public class BallTests
             SpeedX = 0,
             SpeedY = 0
         };
+        double timeInterval = 1.0;
 
         // Act
-        ball.Move();
+        ball.Move(timeInterval);
 
         // Assert
-        Assert.AreEqual(10, ball.x);
-        Assert.AreEqual(20, ball.y);
+        Assert.AreEqual(10, ball.x, 0.0001);
+        Assert.AreEqual(20, ball.y, 0.0001);
     }
 }

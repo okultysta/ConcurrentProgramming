@@ -22,9 +22,9 @@ public class BallLogic : IBallManager
             double radius = 20;
             double currentWidth = frameSizeProvider.Width;
             double currentHeight = frameSizeProvider.Height;
+            double x = radius + random.NextDouble() * (currentWidth - 2 * radius);
+            double y = radius + random.NextDouble() * (currentHeight - 2 * radius);
 
-            double x = random.NextDouble() * (currentWidth - radius);
-            double y = random.NextDouble() * (currentHeight - radius);
 
             double speedX = random.NextDouble() * 5 - 2.5;
             double speedY = random.NextDouble() * 5 - 2.5;

@@ -7,6 +7,7 @@ namespace DataLayer
     {
         private readonly List<Ball> _balls = new List<Ball>();
         private readonly object _lock = new object();
+        private readonly BallLogger  logger = new BallLogger("logfile.txt");
 
         public void AddBall(Ball ball)
         {
@@ -30,6 +31,11 @@ namespace DataLayer
             {
                 _balls.Remove(ball);
             }
+        }
+
+        public void SaveBallData(Ball ball)
+        {
+            logger.Log(ball);
         }
     }
 }

@@ -23,6 +23,13 @@ namespace DataLayer
             this.repository = repository;
             this.delay = delay;
         }
+        public bool IsRunning
+        {
+            get
+            {
+                return running && thread != null && thread.IsAlive;
+            }
+        }
 
         public void Start()
         {
@@ -38,13 +45,26 @@ namespace DataLayer
 
         private void Run()
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            long previousTime = stopwatch.ElapsedMilliseconds;
+            long LogTimeCounter = 0L;
+
             while (running)
             {
+                long currentTime = stopwatch.ElapsedMilliseconds;
+                double TimeInterval = (currentTime - previousTime);
+                LogTimeCounter += (long)TimeInterval;
+                previousTime = currentTime;
                 lock (_lock)
                 {
-                    Move();
+                    Move(TimeInterval/10); //skalowanie
                     HandleWallCollision();
                     HandleCollisions();
+                    if(LogTimeCounter >=1000)
+                    {
+                        repository.SaveBallData(this);
+                        LogTimeCounter = 0L;
+                    }
                 }
 
                 Thread.Sleep(delay);
@@ -75,7 +95,8 @@ namespace DataLayer
                 double dx = other.x - this.x;
                 double dy = other.y - this.y;
                 double distance = Math.Sqrt(dx * dx + dy * dy);
-                double minDist = (this.radius + other.radius)/2;
+                double minDist = this.radius + other.radius;
+
 
                 if (distance < minDist && distance > 0.0)
                 {
