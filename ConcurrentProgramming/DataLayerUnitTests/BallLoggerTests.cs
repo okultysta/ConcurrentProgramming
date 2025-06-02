@@ -45,10 +45,10 @@ namespace DataLayer.Tests
             // Assert
             string[] lines = File.ReadAllLines(tempLogFile);
             Assert.AreEqual(1, lines.Length);
-            StringAssert.Contains(lines[0], "Ball X=123.45");
-            StringAssert.Contains(lines[0], "Y=67.89");
-            StringAssert.Contains(lines[0], "SpeedX=-1.23");
-            StringAssert.Contains(lines[0], "SpeedY=4.56");
+            StringAssert.Contains(lines[0], "Ball X=123,45");
+            StringAssert.Contains(lines[0], "Y=67,89");
+            StringAssert.Contains(lines[0], "SpeedX=-1,23");
+            StringAssert.Contains(lines[0], "SpeedY=4,56");
 
             DateTime parsedDate;
             Assert.IsTrue(DateTime.TryParse(lines[0].Split(' ')[0], out parsedDate));

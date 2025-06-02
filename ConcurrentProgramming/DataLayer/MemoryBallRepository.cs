@@ -9,6 +9,15 @@ namespace DataLayer
         private readonly object _lock = new object();
         private readonly BallLogger  logger = new BallLogger("logfile.txt");
 
+        public MemoryBallRepository(string logFilePath = null)
+        {
+            if (string.IsNullOrEmpty(logFilePath))
+                logFilePath = "logfile.txt"; 
+
+            logger = new BallLogger(logFilePath);
+     
+        }
+
         public void AddBall(Ball ball)
         {
             lock (_lock)
@@ -36,6 +45,7 @@ namespace DataLayer
         public void SaveBallData(Ball ball)
         {
             logger.Log(ball);
+            logger.Stop();
         }
     }
 }

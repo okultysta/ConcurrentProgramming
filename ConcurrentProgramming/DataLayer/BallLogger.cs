@@ -1,52 +1,64 @@
 ﻿using DataLayer;
+using System;
 using System.Collections.Concurrent;
+using System.IO;
+using System.Threading;
 
 public class BallLogger : IDisposable
 {
-    private readonly string filePath;
-    private readonly StreamWriter writer;
+    private readonly string logFilePath;
+    private readonly BlockingCollection<string> logQueue = new();
     private readonly Thread loggingThread;
-    private readonly ConcurrentQueue<Ball> queue = new();
-    private bool running = true;
+    private bool disposed = false;
 
     public BallLogger(string filePath)
     {
-        this.filePath = filePath;
-        writer = new StreamWriter(filePath, append: true) { AutoFlush = true };
-        loggingThread = new Thread(ProcessQueue);
-        loggingThread.IsBackground = true;
+        logFilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+        loggingThread = new Thread(ProcessQueue)
+        {
+            IsBackground = true
+        };
         loggingThread.Start();
     }
 
     public void Log(Ball ball)
     {
-        queue.Enqueue(ball);
+        if (disposed) throw new ObjectDisposedException(nameof(BallLogger));
+        if (ball == null) throw new ArgumentNullException(nameof(ball));
+
+        string logLine = $"{DateTime.Now:o} Ball X={ball.x} Y={ball.y} SpeedX={ball.SpeedX} SpeedY={ball.SpeedY}";
+        logQueue.Add(logLine);
     }
 
     private void ProcessQueue()
     {
-        while (running || !queue.IsEmpty)
+        try
         {
-            if (queue.TryDequeue(out var ball))
+            using StreamWriter writer = new(logFilePath, append: true);
+            foreach (var line in logQueue.GetConsumingEnumerable())
             {
-                // formatowanie linii
-                string line = $"{DateTime.Now:O} Ball X={ball.x} Y={ball.y} SpeedX={ball.SpeedX} SpeedY={ball.SpeedY}";
                 writer.WriteLine(line);
+                writer.Flush();
             }
-            else
-            {
-                Thread.Sleep(50); // unikamy spinlocka
-            }
+        }
+        catch (Exception ex)
+        {
+            // Log error lub obsłuż w inny sposób
+            Console.Error.WriteLine("Logger error: " + ex.Message);
         }
     }
 
+    // Kończy przyjmowanie logów i czeka na zakończenie wątku
     public void Stop()
     {
-        running = false;
+        if (disposed) return;
+
+        logQueue.CompleteAdding();
         loggingThread.Join();
-        writer.Dispose();
+        disposed = true;
     }
 
+    // Implementacja IDisposable
     public void Dispose()
     {
         Stop();

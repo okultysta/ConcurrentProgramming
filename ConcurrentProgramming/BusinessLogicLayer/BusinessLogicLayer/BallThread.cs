@@ -9,7 +9,7 @@ namespace DataLayer
         private readonly int delay;
         private readonly IBallRepository repository;
         private Thread thread;
-        private bool running = true;
+        private bool running = false;
         private readonly object _lock = new object();
 
         public BallThread(double x, double y, double radius, double speedX, double speedY, FrameSizeProvider frameSizeProvider, IBallRepository repository, int delay = 16)
@@ -23,6 +23,7 @@ namespace DataLayer
             this.repository = repository;
             this.delay = delay;
         }
+
         public bool IsRunning
         {
             get
@@ -33,6 +34,8 @@ namespace DataLayer
 
         public void Start()
         {
+            if (running) return; // nie uruchamiaj dwa razy
+            running = true;
             thread = new Thread(Run);
             thread.IsBackground = true;
             thread.Start();
@@ -41,6 +44,10 @@ namespace DataLayer
         public void Stop()
         {
             running = false;
+            if (thread != null && thread.IsAlive)
+            {
+                thread.Join(); // poczekaj na zakończenie wątku
+            }
         }
 
         private void Run()
@@ -55,16 +62,18 @@ namespace DataLayer
                 double TimeInterval = (currentTime - previousTime);
                 LogTimeCounter += (long)TimeInterval;
                 previousTime = currentTime;
+
                 lock (_lock)
                 {
-                    Move(TimeInterval/10); //skalowanie
+                    Move(TimeInterval / 10); // skalowanie
                     HandleWallCollision();
                     HandleCollisions();
-                    if(LogTimeCounter >=1000)
-                    {
-                        repository.SaveBallData(this);
-                        LogTimeCounter = 0L;
-                    }
+                }
+
+                if (LogTimeCounter >= 1000)
+                {
+                    repository.SaveBallData(this);
+                    LogTimeCounter = 0L;
                 }
 
                 Thread.Sleep(delay);
@@ -96,7 +105,6 @@ namespace DataLayer
                 double dy = other.y - this.y;
                 double distance = Math.Sqrt(dx * dx + dy * dy);
                 double minDist = this.radius + other.radius;
-
 
                 if (distance < minDist && distance > 0.0)
                 {
