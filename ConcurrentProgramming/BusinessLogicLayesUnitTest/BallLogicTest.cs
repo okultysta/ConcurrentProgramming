@@ -1,182 +1,146 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
-using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using DataLayer;
-using System;
+using System.Collections.Generic;
 
 [TestClass]
 public class BallLogicTests
 {
+    private const double Width = 800;
+    private const double Height = 600;
+
     [TestMethod]
     public void CreateBall_Should_AddBall_To_Repository()
     {
-        // Arrange
         var repo = new TestBallRepository();
-        var logic = new BallLogic(repo, 800, 600);
+        var logic = new BallLogic(repo, Width, Height);
 
-        // Act
         logic.CreateBall();
 
-        // Assert
+        // Poczekaj chwilę, bo dodawanie jest asynchroniczne
+        Thread.Sleep(100);
+
         Assert.AreEqual(1, repo.Balls.Count);
+
         var ball = repo.Balls.First();
-        Assert.IsTrue(ball.x >= 0 && ball.x <= 800);
-        Assert.IsTrue(ball.y >= 0 && ball.y <= 600);
-        Assert.IsTrue(ball.SpeedX >= -2.5 && ball.SpeedX <= 2.5);
-        Assert.IsTrue(ball.SpeedY >= -2.5 && ball.SpeedY <= 2.5);
+
+        Assert.IsTrue(ball.x >= ball.radius && ball.x <= Width - ball.radius, $"x={ball.x}");
+        Assert.IsTrue(ball.y >= ball.radius && ball.y <= Height - ball.radius, $"y={ball.y}");
+        Assert.IsTrue(ball.SpeedX >= -2.5 && ball.SpeedX <= 2.5, $"SpeedX={ball.SpeedX}");
+        Assert.IsTrue(ball.SpeedY >= -2.5 && ball.SpeedY <= 2.5, $"SpeedY={ball.SpeedY}");
         Assert.AreEqual(20, ball.radius);
     }
 
     [TestMethod]
-    public void UpdateBallPositions_Should_Clamp_And_Bounce()
+    public void DeleteBall_Should_Remove_FirstBall_And_StopThread()
     {
-        // Arrange
         var repo = new TestBallRepository();
-        var ball = new Ball { x = 790, y = 590, radius = 20, SpeedX = 15, SpeedY = 15 };
-        repo.Balls.Add(ball);
-        var logic = new BallLogic(repo, 800, 600);
+        var logic = new BallLogic(repo, Width, Height);
 
-        // Act
-        logic.UpdateBallPositions();
+        logic.CreateBall();
+        Thread.Sleep(100); // daj czas na stworzenie i start wątku
 
-        // Assert
-        Assert.IsTrue(ball.SpeedX < 0); // powinien się odbić w poziomie
-        Assert.IsTrue(ball.SpeedY < 0); // powinien się odbić w pionie
-        Assert.IsTrue(ball.x <= 800 - ball.radius);
-        Assert.IsTrue(ball.y <= 600 - ball.radius);
-    }
-
-    [TestMethod]
-    public void GetCurrentBallStates_Should_Return_AllBalls()
-    {
-        // Arrange
-        var repo = new TestBallRepository();
-        repo.Balls.Add(new Ball());
-        repo.Balls.Add(new Ball());
-        var logic = new BallLogic(repo, 800, 600);
-
-        // Act
-        var result = logic.GetCurrentBallStates();
-
-        // Assert
-        Assert.AreEqual(2, result.Count());
-    }
-
-    [TestMethod]
-    public void DeleteBall_Should_Remove_FirstBall()
-    {
-        // Arrange
-        var repo = new TestBallRepository();
-        var ball1 = new Ball();
-        var ball2 = new Ball();
-        repo.Balls.Add(ball1);
-        repo.Balls.Add(ball2);
-        var logic = new BallLogic(repo, 800, 600);
-
-        // Act
-        logic.DeleteBall();
-
-        // Assert
         Assert.AreEqual(1, repo.Balls.Count);
-        Assert.AreSame(ball2, repo.Balls[0]);
+
+        var ballThread = repo.Balls.First() as BallThread;
+        Assert.IsNotNull(ballThread);
+        Assert.IsTrue(ballThread != null);
+
+        logic.DeleteBall();
+        Thread.Sleep(100); // daj czas na zatrzymanie i usunięcie
+
+        Assert.AreEqual(0, repo.Balls.Count);
+        Assert.IsFalse(ballThread.IsRunning);
     }
 
     [TestMethod]
-    public void UpdateFrameSize_Should_Update_Internal_Dimensions()
+    public void updateFrameSize_Should_Update_FrameSizeProvider()
     {
-        // Arrange
-        var logic = new BallLogic(new TestBallRepository(), 100, 100);
+        var repo = new TestBallRepository();
+        var logic = new BallLogic(repo, 100, 100);
 
-        // Act
         logic.updateFrameSize(1024, 768);
 
-        // Sprawdzamy przez odbicie (np. pozycja kuli się zmieni po odbiciu od nowej krawędzi)
-        var repo = new TestBallRepository();
-        var ball = new Ball { x = 1010, y = 750, radius = 20, SpeedX = 10, SpeedY = 10 };
-        repo.Balls.Add(ball);
-        logic = new BallLogic(repo, 1024, 768);
-        logic.UpdateBallPositions();
+        logic.CreateBall();
+        Thread.Sleep(100);
 
-        Assert.IsTrue(ball.x <= 1024 - ball.radius);
-        Assert.IsTrue(ball.y <= 768 - ball.radius);
+        var ball = repo.Balls.First();
+        Assert.IsTrue(ball.x >= ball.radius && ball.x <= 1024 - ball.radius);
+        Assert.IsTrue(ball.y >= ball.radius && ball.y <= 768 - ball.radius);
     }
 
     [TestMethod]
-    public void HandleCollisions_Should_ChangeVelocities_WhenBallsCollide()
+    public void BallThread_Should_Bounce_Off_Walls()
     {
-        // Arrange
-        var ball1 = new Ball { x = 100, y = 100, radius = 20, SpeedX = 1, SpeedY = 0 };
-        var ball2 = new Ball { x = 115, y = 100, radius = 20, SpeedX = -1, SpeedY = 0 };
-
         var repo = new TestBallRepository();
-        repo.Balls.Add(ball1);
-        repo.Balls.Add(ball2);
-        var logic = new BallLogic(repo, 800, 600);
 
-        // Act
-        logic.UpdateBallPositions();
+        // Kula na krawędzi, lecąca w stronę ściany
+        var ball = new BallThread(Width - 19, Height - 19, 20, 10, 10, new FrameSizeProvider(Width, Height), repo, delay: 10);
+        repo.AddBall(ball);
 
-        // Assert - powinni zamienić się prędkościami przy idealnym zderzeniu
-        Assert.IsTrue(ball1.SpeedX < 1);
-        Assert.IsTrue(ball2.SpeedX > -1);
-        Assert.AreNotEqual(1, ball1.SpeedX);
-        Assert.AreNotEqual(-1, ball2.SpeedX);
+        ball.Start();
+
+        // Czekamy na kilka aktualizacji pozycji
+        Thread.Sleep(200);
+
+        ball.Stop();
+
+        Assert.IsTrue(ball.SpeedX < 0, "SpeedX powinno się odbić i być ujemne");
+        Assert.IsTrue(ball.SpeedY < 0, "SpeedY powinno się odbić i być ujemne");
+        Assert.IsTrue(ball.x <= Width - ball.radius);
+        Assert.IsTrue(ball.y <= Height - ball.radius);
     }
 
     [TestMethod]
-    public void HandleCollisions_Should_NotChange_WhenBallsFarApart()
+    public void BallThread_Should_Handle_Collision_With_Another_Ball()
     {
-        // Arrange
-        var ball1 = new Ball { x = 100, y = 100, radius = 20, SpeedX = 1, SpeedY = 0 };
-        var ball2 = new Ball { x = 300, y = 100, radius = 20, SpeedX = -1, SpeedY = 0 };
-
         var repo = new TestBallRepository();
-        repo.Balls.Add(ball1);
-        repo.Balls.Add(ball2);
-        var logic = new BallLogic(repo, 800, 600);
 
-        // Act
-        logic.UpdateBallPositions();
+        var ball1 = new BallThread(100, 100, 20, 1, 0, new FrameSizeProvider(Width, Height), repo, delay: 10);
+        var ball2 = new BallThread(115, 100, 20, -1, 0, new FrameSizeProvider(Width, Height), repo, delay: 10);
 
-        // Assert - brak zmian, są za daleko
-        Assert.AreEqual(1, ball1.SpeedX);
-        Assert.AreEqual(-1, ball2.SpeedX);
+        repo.AddBall(ball1);
+        repo.AddBall(ball2);
+
+        ball1.Start();
+        ball2.Start();
+
+        Thread.Sleep(300);
+
+        ball1.Stop();
+        ball2.Stop();
+
+        // Po kolizji prędkości powinny się zmienić
+        Assert.IsTrue(ball1.SpeedX < 1, "ball1.SpeedX powinno zmaleć");
+        Assert.IsTrue(ball2.SpeedX > -1, "ball2.SpeedX powinno wzrosnąć");
     }
-
-    [TestMethod]
-    public void HandleCollisions_Should_CorrectOverlap()
-    {
-        // Arrange
-        var ball1 = new Ball { x = 100, y = 100, radius = 20, SpeedX = 0, SpeedY = 0 };
-        var ball2 = new Ball { x = 105, y = 100, radius = 20, SpeedX = 0, SpeedY = 0 }; // lekko się nachodzą
-
-        var repo = new TestBallRepository();
-        repo.Balls.Add(ball1);
-        repo.Balls.Add(ball2);
-        var logic = new BallLogic(repo, 800, 600);
-
-        // Act
-        logic.UpdateBallPositions();
-
-        // Assert - kule powinny się rozsunąć
-        double dx = ball2.x - ball1.x;
-        double dy = ball2.y - ball1.y;
-        double distance = Math.Sqrt(dx * dx + dy * dy);
-        Assert.IsTrue(distance >= 10); // minDist = (20+20)/2 = 20; więc każda odsunie się o 5
-    }
-
 
     #region Test Double for IBallRepository
 
     private class TestBallRepository : IBallRepository
     {
-        public List<Ball> Balls { get; } = new();
+        public List<Ball> Balls { get; } = new List<Ball>();
 
-        public void AddBall(Ball b) => Balls.Add(b);
+        public void AddBall(Ball b)
+        {
+            Balls.Add(b);
+        }
 
-        public IEnumerable<Ball> GetAllBalls() => Balls;
+        public IEnumerable<Ball> GetAllBalls()
+        {
+            return Balls;
+        }
 
-        public void removeBall(Ball b) => Balls.Remove(b);
+        public void removeBall(Ball b)
+        {
+            Balls.Remove(b);
+        }
+
+        public void SaveBallData(Ball ball)
+        {
+            // Tu nic nie robimy, to mock
+        }
     }
 
     #endregion

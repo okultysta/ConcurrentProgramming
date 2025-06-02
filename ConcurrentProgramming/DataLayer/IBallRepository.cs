@@ -6,5 +6,7 @@
         IEnumerable<Ball> GetAllBalls();
 
         void removeBall(Ball ball);
+
+        void SaveBallData(Ball ball);
     }
 }

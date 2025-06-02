@@ -9,7 +9,7 @@ namespace DataLayer
         private readonly int delay;
         private readonly IBallRepository repository;
         private Thread thread;
-        private bool running = true;
+        private bool running = false;
         private readonly object _lock = new object();
 
         public BallThread(double x, double y, double radius, double speedX, double speedY, FrameSizeProvider frameSizeProvider, IBallRepository repository, int delay = 16)
@@ -24,8 +24,18 @@ namespace DataLayer
             this.delay = delay;
         }
 
+        public bool IsRunning
+        {
+            get
+            {
+                return running && thread != null && thread.IsAlive;
+            }
+        }
+
         public void Start()
         {
+            if (running) return; // nie uruchamiaj dwa razy
+            running = true;
             thread = new Thread(Run);
             thread.IsBackground = true;
             thread.Start();
@@ -34,17 +44,36 @@ namespace DataLayer
         public void Stop()
         {
             running = false;
+            if (thread != null && thread.IsAlive)
+            {
+                thread.Join(); // poczekaj na zakończenie wątku
+            }
         }
 
         private void Run()
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            long previousTime = stopwatch.ElapsedMilliseconds;
+            long LogTimeCounter = 0L;
+
             while (running)
             {
+                long currentTime = stopwatch.ElapsedMilliseconds;
+                double TimeInterval = (currentTime - previousTime);
+                LogTimeCounter += (long)TimeInterval;
+                previousTime = currentTime;
+
                 lock (_lock)
                 {
-                    Move();
+                    Move(TimeInterval / 10); // skalowanie
                     HandleWallCollision();
                     HandleCollisions();
+                }
+
+                if (LogTimeCounter >= 1000)
+                {
+                    repository.SaveBallData(this);
+                    LogTimeCounter = 0L;
                 }
 
                 Thread.Sleep(delay);
