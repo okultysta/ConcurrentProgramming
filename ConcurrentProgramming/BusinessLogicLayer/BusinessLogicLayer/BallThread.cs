@@ -9,6 +9,7 @@ namespace DataLayer
         private readonly int delay;
         private readonly IBallRepository repository;
         private Thread thread;
+        private Timer timer;
         private bool running = false;
         private readonly object _lock = new object();
 
@@ -22,6 +23,7 @@ namespace DataLayer
             this.frameSizeProvider = frameSizeProvider;
             this.repository = repository;
             this.delay = delay;
+            this.timer = new Timer(SaveDiagnosticData, null, 1000, 1000);
         }
 
         public bool IsRunning
@@ -52,28 +54,15 @@ namespace DataLayer
 
         private void Run()
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-            long previousTime = stopwatch.ElapsedMilliseconds;
-            long LogTimeCounter = 0L;
-
             while (running)
             {
-                long currentTime = stopwatch.ElapsedMilliseconds;
-                double TimeInterval = (currentTime - previousTime);
-                LogTimeCounter += (long)TimeInterval;
-                previousTime = currentTime;
+                
 
                 lock (_lock)
                 {
-                    Move(TimeInterval / 10); // skalowanie
+                    Move(delay); // skalowanie
                     HandleWallCollision();
                     HandleCollisions();
-                }
-
-                if (LogTimeCounter >= 1000)
-                {
-                    repository.SaveBallData(this);
-                    LogTimeCounter = 0L;
                 }
 
                 Thread.Sleep(delay);
@@ -140,6 +129,13 @@ namespace DataLayer
                     other.y += overlap * ny;
                 }
             }
+        }
+
+        private void SaveDiagnosticData(Object state)
+        {
+
+            repository.SaveBallData(this);
+            System.Diagnostics.Debug.WriteLine($"[LOG] Ball X={this.x}, Y={this.y}, SpeedX={this.SpeedX}, SpeedY={this.SpeedY}");
         }
     }
 }
