@@ -48,6 +48,7 @@ namespace DataLayer
             running = false;
             if (thread != null && thread.IsAlive)
             {
+                timer.Dispose();
                 thread.Join(); // poczekaj na zakończenie wątku
             }
         }
