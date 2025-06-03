@@ -135,8 +135,11 @@ namespace DataLayer
         private void SaveDiagnosticData(Object state)
         {
 
-            repository.SaveBallData(this);
-            System.Diagnostics.Debug.WriteLine($"[LOG] Ball X={this.x}, Y={this.y}, SpeedX={this.SpeedX}, SpeedY={this.SpeedY}");
+            lock (_lock)
+            {
+                repository.SaveBallData(this);
+                System.Diagnostics.Debug.WriteLine($"[LOG] Ball X={this.x}, Y={this.y}, SpeedX={this.SpeedX}, SpeedY={this.SpeedY}");
+            }
         }
     }
 }
